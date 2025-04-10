@@ -25,6 +25,8 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+# Obtener todos los miembros 
+
 @app.route('/members', methods=['GET'])
 def handle_hello():
 
@@ -35,8 +37,55 @@ def handle_hello():
         "family": members
     }
 
-
     return jsonify(response_body), 200
+
+# Obtener un miembro en especifico
+
+@app.route("/members/<int:id>",methods=["GET"])
+def member_view(id):
+    miembro = jackson_family.get_member(id)
+    if miembro == "":
+        return jsonify(message= "recuso no encontrado"),404
+    else:
+        response_body ={
+            "id": miembro["id"],
+            "firts_name": miembro["name"],
+            "last_name": miembro["last_name"],
+            "age": miembro["age"]
+        }   
+        return jsonify(response_body),200
+    
+# Eliminar un miembro en especifico
+
+@app.route("/members/<int:id>", methods=["DELETE"])
+def delete_member(id):
+    delete = jackson_family.delete_member(id)
+    if delete == "":
+        response_body={
+            "done":False
+        }
+        return jsonify(response_body),404
+    else:
+        response_body={
+        "done":True
+        }
+        return jsonify(response_body),200
+    
+# Ruta para postear un miembro
+    
+@app.route("/members", methods=["POST"])
+def agregar_miembro():
+    member= request.get_json()
+    agregar = jackson_family.add_member(member)
+    if agregar == "":
+        return jsonify(message= "Falta algun atributo"),400
+    else:
+       response_body ={
+           "done":True
+       }
+       return jsonify(response_body),200
+
+
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
